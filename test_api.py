@@ -1,0 +1,27 @@
+import os
+from dotenv import load_dotenv
+from openai import OpenAI
+
+# Load environment variables from .env file
+load_dotenv()
+
+try:
+    api_key = os.getenv('OPENAI_API_KEY')
+    print(f"API Key found: {'Yes' if api_key else 'No'}")
+    if api_key:
+        print(f"API Key starts with: {api_key[:10]}...")
+    else:
+        raise ValueError("No API key found in environment")
+    
+    client = OpenAI(api_key=api_key)
+    print("Created OpenAI client")
+    
+    response = client.chat.completions.create(
+        model='gpt-3.5-turbo',
+        messages=[{'role': 'user', 'content': 'Say hello'}]
+    )
+    print("Got response from API")
+    print("Response:", response.choices[0].message.content)
+
+except Exception as e:
+    print(f"Error: {str(e)}")

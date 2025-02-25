@@ -10,13 +10,13 @@ import yaml
 from shortGPT.config.api_db import ApiKeyManager
 
 
-def num_tokens_from_messages(texts, model="gpt-4o-mini"):
+def num_tokens_from_messages(texts, model="gpt-3.5-turbo"):
     """Returns the number of tokens used by a list of messages."""
     try:
         encoding = tiktoken.encoding_for_model(model)
     except KeyError:
         encoding = tiktoken.get_encoding("cl100k_base")
-    if model == "gpt-4o-mini":  # note: future models may deviate from this
+    if model == "gpt-3.5-turbo":  # note: future models may deviate from this
         if isinstance(texts, str):
             texts = [texts]
         score = 0
@@ -67,22 +67,24 @@ def load_local_yaml_prompt(file_path):
 def open_file(filepath):
     with open(filepath, 'r', encoding='utf-8') as infile:
         return infile.read()
+
 from openai import OpenAI
 
 def llm_completion(chat_prompt="", system="", temp=0.7, max_tokens=2000, remove_nl=True, conversation=None):
-    openai_key= ApiKeyManager.get_api_key("OPENAI_API_KEY")
+    openai_key = ApiKeyManager.get_api_key("OPENAI_API_KEY")
     gemini_key = ApiKeyManager.get_api_key("GEMINI_API_KEY")
     if gemini_key:
         client = OpenAI( 
             api_key=gemini_key,
             base_url="https://generativelanguage.googleapis.com/v1beta/openai/"
         )
-        model="gemini-2.0-flash-lite-preview-02-05"
+        model = "gemini-2.0-flash-lite-preview-02-05"
     elif openai_key:
-        client = OpenAI( api_key=openai_key)
-        model="gpt-4o-mini"
+        client = OpenAI(api_key=openai_key)
+        model = "gpt-3.5-turbo"  # Changed from gpt-4o-mini to gpt-3.5-turbo
     else:
         raise Exception("No OpenAI or Gemini API Key found for LLM request")
+    
     max_retry = 5
     retry = 0
     error = ""
@@ -101,7 +103,7 @@ def llm_completion(chat_prompt="", system="", temp=0.7, max_tokens=2000, remove_
                 max_tokens=max_tokens,
                 temperature=temp,
                 timeout=30
-                )
+            )
             text = response.choices[0].message.content.strip()
             if remove_nl:
                 text = re.sub('\s+', ' ', text)
